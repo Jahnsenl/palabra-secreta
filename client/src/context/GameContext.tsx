@@ -71,6 +71,10 @@ const GameContext = createContext<GameContextValue | null>(null);
 
 const SOCKET_URL = import.meta.env.VITE_SERVER_URL as string | undefined;
 
+const isInDiscord =
+  window.location.hostname.endsWith('.discordsays.com') ||
+  (() => { try { return window.self !== window.top; } catch { return true; } })();
+
 const defaultState: GameState = {
   phase: 'lobby',
   players: [],
@@ -97,7 +101,7 @@ export function GameProvider({ roomId, currentUserId, currentUsername, currentAv
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = SOCKET_URL
+    const socket = (SOCKET_URL && !isInDiscord)
       ? io(SOCKET_URL)
       : io({ path: '/api/socket.io' });
     socketRef.current = socket;
