@@ -192,7 +192,7 @@ export function Playing() {
           {!isSuddenDeath && currentPlayer && (
             <p className="attempts-left">
               {currentPlayer.attemptsLeft} intento{currentPlayer.attemptsLeft !== 1 ? 's' : ''} restante{currentPlayer.attemptsLeft !== 1 ? 's' : ''}
-              {gameState.difficulty === 'cooperative' && gameState.cooperativeAttemptsLeft !== undefined && (
+              {gameState.isCooperative && gameState.cooperativeAttemptsLeft !== undefined && (
                 <> · {gameState.cooperativeAttemptsLeft} compartidos</>
               )}
             </p>
