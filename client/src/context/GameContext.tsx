@@ -33,6 +33,7 @@ export interface GameState {
   isCooperative: boolean;
   isTraitor: boolean;
   category?: string;
+  startHint?: string;
   maxAttempts: number;
   cooperativeAttemptsLeft?: number;
   suddenDeathStartTime?: number;

@@ -107,6 +107,9 @@ export function Playing() {
         {showCategory && gameState.category && (
           <span className="info-badge">🏷️ {gameState.category}</span>
         )}
+        {showCategory && gameState.startHint && (
+          <span className="info-badge">💡 {gameState.startHint}</span>
+        )}
         <span className="info-badge">🔢 Ronda {gameState.roundNumber}</span>
       </div>
 

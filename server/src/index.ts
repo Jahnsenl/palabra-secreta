@@ -77,6 +77,7 @@ interface GameState {
   isCooperative: boolean;
   isTraitor: boolean;
   category?: string;
+  startHint?: string;
   maxAttempts: number;
   cooperativeAttemptsLeft?: number;
   suddenDeathStartTime?: number;
@@ -305,6 +306,7 @@ io.on('connection', (socket: Socket) => {
     room.wordLength = wordLen;
     room.maxAttempts = maxAttempts;
     room.category = wordData.category;
+    room.startHint = room.difficulty === 'easy' ? wordData.hints[0] : undefined;
     room.phase = 'playing';
     room.suddenDeathStartTime = undefined;
     room.revealedHint = undefined;
