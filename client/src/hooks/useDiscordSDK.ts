@@ -34,12 +34,21 @@ export function useDiscordSDK() {
     let sdk: DiscordSDK;
     try {
       sdk = new DiscordSDK(CLIENT_ID);
-      setRoomId(sdk.instanceId);
-    } catch {
+      setRoomId(sdk.instanceId ?? 'discord-room');
+    } catch (e) {
+      console.error('[Discord SDK init]', e);
       return;
     }
 
-    sdk.ready().then(async () => {
+    const READY_TIMEOUT = 8000;
+    const readyPromise = Promise.race([
+      sdk.ready(),
+      new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error('Discord ready timeout')), READY_TIMEOUT)
+      ),
+    ]);
+
+    readyPromise.then(async () => {
       try {
         const { code } = await sdk.commands.authorize({
           client_id: CLIENT_ID,

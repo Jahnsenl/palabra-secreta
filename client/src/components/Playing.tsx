@@ -67,6 +67,7 @@ export function Playing() {
 
   const showLength = gameState.difficulty === 'easy' || gameState.difficulty === 'normal';
   const showCategory = gameState.difficulty === 'easy';
+  const showHint = gameState.difficulty === 'easy' || gameState.difficulty === 'normal';
   const showOtherLetters = gameState.difficulty !== 'extreme';
 
   function handleKey(e: KeyboardEvent<HTMLInputElement>) {
@@ -107,7 +108,7 @@ export function Playing() {
         {showCategory && gameState.category && (
           <span className="info-badge">🏷️ {gameState.category}</span>
         )}
-        {showCategory && gameState.startHint && (
+        {showHint && gameState.startHint && (
           <span className="info-badge">💡 {gameState.startHint}</span>
         )}
         <span className="info-badge">🔢 Ronda {gameState.roundNumber}</span>

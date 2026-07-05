@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useDiscordSDK } from './hooks/useDiscordSDK';
 import { GameProvider, useGame } from './context/GameContext';
 import { Lobby } from './components/Lobby';
@@ -7,11 +8,25 @@ import './App.css';
 
 function GameContent() {
   const { gameState, currentUserId, isConnected } = useGame();
+  const [waitSeconds, setWaitSeconds] = useState(0);
+
+  useEffect(() => {
+    if (isConnected) { setWaitSeconds(0); return; }
+    const id = setInterval(() => setWaitSeconds(s => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [isConnected]);
 
   if (!isConnected) {
     return (
       <div className="loading">
         <p>Conectando...</p>
+        {waitSeconds >= 5 && (
+          <p style={{ fontSize: '0.75rem', color: 'var(--text2)', marginTop: '0.5rem' }}>
+            {waitSeconds < 20
+              ? 'Iniciando servidor, espera un momento…'
+              : 'El servidor tarda en arrancar (~30 s). Aguanta un poco más.'}
+          </p>
+        )}
       </div>
     );
   }

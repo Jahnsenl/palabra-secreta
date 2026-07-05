@@ -4,10 +4,10 @@ const PLAYER_EMOJIS = ['👑', '🤖', '🧙‍♂️', '🕵️', '🦊', '🐺
 const MAX_PLAYERS = 6;
 
 const DIFFICULTIES: { value: Difficulty; label: string; desc: string }[] = [
-  { value: 'easy',    label: 'Fácil',   desc: 'Longitud + pista · letras únicas' },
-  { value: 'normal',  label: 'Normal',  desc: 'Solo longitud · letras pueden repetirse' },
-  { value: 'hard',    label: 'Difícil', desc: 'Sin longitud ni pista' },
-  { value: 'extreme', label: 'Extremo', desc: 'Sin info · solo conoces tu letra' },
+  { value: 'easy',    label: 'Fácil',   desc: 'Longitud + categoría + pista · letras únicas' },
+  { value: 'normal',  label: 'Normal',  desc: 'Longitud + pista · letras únicas' },
+  { value: 'hard',    label: 'Difícil', desc: 'Sin pistas · letras pueden repetirse' },
+  { value: 'extreme', label: 'Extremo', desc: 'Sin pistas · sin ver letras ajenas' },
 ];
 
 export function Lobby() {
@@ -88,7 +88,7 @@ export function Lobby() {
 
       <div className="lobby-info">
         <p>📏 Longitud mínima: <strong>{gameState.players.length + 2}</strong> letras</p>
-        <p>🔢 Intentos: <strong>longitud − {gameState.players.length} − 1</strong></p>
+        <p>🔢 Intentos: <strong>longitud − jugadores − 1</strong> (mín. 2, máx. 5)</p>
       </div>
 
       <button className="start-button" onClick={startGame} disabled={!canStart}>

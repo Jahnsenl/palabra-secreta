@@ -244,7 +244,7 @@ io.on('connection', (socket: Socket) => {
     // En modo Fácil la palabra debe tener al menos tantas letras únicas como jugadores
     const validWords = WORDS.filter(w => {
       if (w.word.length < minLength) return false;
-      if (room.difficulty === 'easy' && uniqueLetters(w.word).length < playerCount) return false;
+      if ((room.difficulty === 'easy' || room.difficulty === 'normal') && uniqueLetters(w.word).length < playerCount) return false;
       return true;
     });
     if (validWords.length === 0) return;
@@ -254,11 +254,18 @@ io.on('connection', (socket: Socket) => {
     const wordLen = word.length;
     secretWords.set(roomId, word);
 
-    const maxAttempts = wordLen - playerCount - 1;
+    const baseAttempts = wordLen - playerCount - 1;
+    const maxAttempts = room.difficulty === 'easy'
+      ? Math.max(2, Math.min(5, baseAttempts + 2))
+      : room.difficulty === 'normal'
+        ? Math.max(2, Math.min(5, baseAttempts + 1))
+        : room.difficulty === 'hard'
+          ? Math.max(2, Math.min(5, baseAttempts))
+          : Math.max(2, Math.min(3, baseAttempts)); // extreme: máximo 3
 
     // Asignar posiciones
     let positions: number[];
-    if (room.difficulty === 'easy') {
+    if (room.difficulty === 'easy' || room.difficulty === 'normal') {
       // En Fácil: cada jugador recibe una letra diferente (posiciones con letras únicas)
       const seenLetters = new Set<string>();
       const uniquePositions: number[] = [];
@@ -306,7 +313,7 @@ io.on('connection', (socket: Socket) => {
     room.wordLength = wordLen;
     room.maxAttempts = maxAttempts;
     room.category = wordData.category;
-    room.startHint = room.difficulty === 'easy' ? wordData.hints[0] : undefined;
+    room.startHint = (room.difficulty === 'easy' || room.difficulty === 'normal') ? wordData.hints[0] : undefined;
     room.phase = 'playing';
     room.suddenDeathStartTime = undefined;
     room.revealedHint = undefined;
