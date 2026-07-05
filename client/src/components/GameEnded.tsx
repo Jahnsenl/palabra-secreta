@@ -1,7 +1,8 @@
 import { useGame } from '../context/GameContext';
 
 export function GameEnded() {
-  const { gameState, nextRound, resetGame } = useGame();
+  const { gameState, currentUserId, nextRound, resetGame } = useGame();
+  const isHost = gameState.hostId === currentUserId || gameState.players[0]?.id === currentUserId;
 
   const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
   const first = gameState.players.find(p => p.guessOrder === 1);
@@ -64,8 +65,8 @@ export function GameEnded() {
         <button className="next-round-btn" onClick={nextRound}>
           Siguiente ronda
         </button>
-        <button className="reset-btn" onClick={resetGame}>
-          Nueva partida
+        <button className="reset-btn" onClick={resetGame} disabled={!isHost}>
+          {isHost ? 'Nueva partida' : 'Solo el anfitrión'}
         </button>
       </div>
     </div>

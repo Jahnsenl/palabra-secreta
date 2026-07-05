@@ -94,10 +94,12 @@ export function Lobby() {
         <p>🔢 Intentos: <strong>longitud − jugadores − 1</strong> (mín. 2, máx. 5)</p>
       </div>
 
-      <button className="start-button" onClick={startGame} disabled={!canStart}>
-        {canStart
-          ? 'Comenzar partida'
-          : `Necesitas ${2 - gameState.players.length} jugador${2 - gameState.players.length !== 1 ? 'es' : ''} más`}
+      <button className="start-button" onClick={startGame} disabled={!canStart || !isHost}>
+        {!isHost
+          ? 'Esperando al anfitrión...'
+          : canStart
+            ? 'Comenzar partida'
+            : `Necesitas ${2 - gameState.players.length} jugador${2 - gameState.players.length !== 1 ? 'es' : ''} más`}
       </button>
     </div>
   );
