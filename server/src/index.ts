@@ -46,7 +46,7 @@ app.post('/token', async (req, res) => {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type GamePhase = 'lobby' | 'playing' | 'sudden_death' | 'ended';
-type Difficulty = 'easy' | 'normal' | 'hard' | 'extreme';
+type Difficulty = 'easy' | 'normal' | 'hard';
 type LetterResult = 'correct' | 'present' | 'absent';
 
 interface PlayerAttempt {
@@ -148,13 +148,12 @@ function broadcast(roomId: string) {
   if (!room) return;
 
   const secret = secretWords.get(roomId);
-  const hideLetters = room.difficulty === 'extreme';
 
   const safeState = {
     ...room,
+    hostId: room.players[0]?.id,
     players: room.players.map(p => ({
       ...p,
-      secretLetter: hideLetters ? undefined : p.secretLetter,
       secretLetterIndex: undefined,
       socketId: undefined,
     })),
@@ -228,6 +227,8 @@ io.on('connection', (socket: Socket) => {
   }) => {
     const room = getRoom(roomId);
     if (room.phase !== 'lobby') return;
+    const host = room.players[0];
+    if (!host || host.socketId !== socket.id) return;
     if (difficulty !== undefined) room.difficulty = difficulty;
     if (isCooperative !== undefined) room.isCooperative = isCooperative;
     if (isTraitor !== undefined) room.isTraitor = isTraitor;
@@ -259,9 +260,7 @@ io.on('connection', (socket: Socket) => {
       ? Math.max(2, Math.min(5, baseAttempts + 2))
       : room.difficulty === 'normal'
         ? Math.max(2, Math.min(5, baseAttempts + 1))
-        : room.difficulty === 'hard'
-          ? Math.max(2, Math.min(5, baseAttempts))
-          : Math.max(2, Math.min(3, baseAttempts)); // extreme: máximo 3
+        : Math.max(2, Math.min(5, baseAttempts)); // hard: fórmula base
 
     // Asignar posiciones
     let positions: number[];
@@ -338,10 +337,7 @@ io.on('connection', (socket: Socket) => {
     if (!player || player.hasGuessed) return;
 
     const secret = secretWords.get(roomId)!;
-    if (!secret || normalize(attemptWord).length !== normalize(secret).length) {
-      socket.emit('attempt_rejected', { reason: 'wrong_length' });
-      return;
-    }
+    if (!secret || normalize(attemptWord).length !== normalize(secret).length) return;
 
     if (room.phase === 'sudden_death') {
       if (player.usedSuddenDeath) return;

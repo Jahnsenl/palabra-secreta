@@ -4,15 +4,15 @@ const PLAYER_EMOJIS = ['👑', '🤖', '🧙‍♂️', '🕵️', '🦊', '🐺
 const MAX_PLAYERS = 6;
 
 const DIFFICULTIES: { value: Difficulty; label: string; desc: string }[] = [
-  { value: 'easy',    label: 'Fácil',   desc: 'Longitud + categoría + pista · letras únicas' },
-  { value: 'normal',  label: 'Normal',  desc: 'Longitud + pista · letras únicas' },
-  { value: 'hard',    label: 'Difícil', desc: 'Longitud · sin pistas · letras pueden repetirse' },
-  { value: 'extreme', label: 'Extremo', desc: 'Sin pistas · sin ver letras ajenas' },
+  { value: 'easy',   label: 'Fácil',   desc: 'Longitud + categoría + pista · letras únicas' },
+  { value: 'normal', label: 'Normal',  desc: 'Longitud + pista · letras únicas' },
+  { value: 'hard',   label: 'Difícil', desc: 'Longitud · sin pistas · letras pueden repetirse' },
 ];
 
 export function Lobby() {
-  const { gameState, startGame, updateSettings } = useGame();
+  const { gameState, currentUserId, startGame, updateSettings } = useGame();
   const canStart = gameState.players.length >= 2;
+  const isHost = gameState.hostId === currentUserId || gameState.players[0]?.id === currentUserId;
 
   const slots = Array.from({ length: MAX_PLAYERS }, (_, i) => ({
     player: gameState.players[i] || null,
@@ -43,13 +43,14 @@ export function Lobby() {
       </div>
 
       <div className="section">
-        <h2>Dificultad</h2>
+        <h2>Dificultad {!isHost && <span className="host-only-tag">solo el anfitrión</span>}</h2>
         <div className="difficulty-grid">
           {DIFFICULTIES.map(({ value, label, desc }) => (
             <button
               key={value}
               className={`difficulty-btn${gameState.difficulty === value ? ' active' : ''}`}
               onClick={() => updateSettings({ difficulty: value })}
+              disabled={!isHost}
             >
               <span className="diff-label">{label}</span>
               <span className="diff-desc">{desc}</span>
@@ -59,11 +60,12 @@ export function Lobby() {
       </div>
 
       <div className="section">
-        <h2>Modos extra</h2>
+        <h2>Modos extra {!isHost && <span className="host-only-tag">solo el anfitrión</span>}</h2>
         <div className="modes-row">
           <button
             className={`mode-toggle${gameState.isCooperative ? ' active' : ''}`}
             onClick={() => updateSettings({ isCooperative: !gameState.isCooperative })}
+            disabled={!isHost}
           >
             <span className="mode-icon">🤝</span>
             <span className="mode-label">Cooperativo</span>
@@ -72,6 +74,7 @@ export function Lobby() {
           <button
             className={`mode-toggle${gameState.isTraitor ? ' active' : ''}`}
             onClick={() => updateSettings({ isTraitor: !gameState.isTraitor })}
+            disabled={!isHost}
           >
             <span className="mode-icon">🗡️</span>
             <span className="mode-label">Traidor</span>

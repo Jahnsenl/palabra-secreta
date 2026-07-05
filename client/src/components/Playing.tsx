@@ -9,11 +9,10 @@ function LetterBox({ char, result }: { char: string; result?: LetterResult }) {
   return <span className={cls}>{char || ''}</span>;
 }
 
-function WordGrid({ attempts, wordLength, currentInput, hideCurrentRow }: {
+function WordGrid({ attempts, wordLength, currentInput }: {
   attempts: { word: string; results: LetterResult[] }[];
   wordLength: number;
   currentInput: string;
-  hideCurrentRow?: boolean;
 }) {
   return (
     <div className="word-grid">
@@ -24,13 +23,11 @@ function WordGrid({ attempts, wordLength, currentInput, hideCurrentRow }: {
           ))}
         </div>
       ))}
-      {!hideCurrentRow && (
-        <div className="grid-row current">
-          {Array.from({ length: wordLength }, (_, j) => (
-            <LetterBox key={j} char={currentInput[j] ?? ''} />
-          ))}
-        </div>
-      )}
+      <div className="grid-row current">
+        {Array.from({ length: wordLength }, (_, j) => (
+          <LetterBox key={j} char={currentInput[j] ?? ''} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -53,7 +50,7 @@ function SuddenDeathTimer({ startTime }: { startTime: number }) {
 }
 
 export function Playing() {
-  const { gameState, currentUserId, privateInfo, submitAttempt, attemptError } = useGame();
+  const { gameState, currentUserId, privateInfo, submitAttempt } = useGame();
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -67,10 +64,8 @@ export function Playing() {
       : currentPlayer.attemptsLeft > 0
   );
 
-  const showLength = gameState.difficulty !== 'extreme';
   const showCategory = gameState.difficulty === 'easy';
   const showHint = gameState.difficulty === 'easy' || gameState.difficulty === 'normal';
-  const showOtherLetters = gameState.difficulty !== 'extreme';
 
   function handleKey(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') handleSubmit();
@@ -78,8 +73,7 @@ export function Playing() {
 
   function handleSubmit() {
     const normalized = input.trim().toUpperCase();
-    if (showLength && normalized.length !== gameState.wordLength) return;
-    if (normalized.length < 2) return;
+    if (normalized.length !== gameState.wordLength) return;
     submitAttempt(normalized);
     setInput('');
     inputRef.current?.focus();
@@ -105,9 +99,7 @@ export function Playing() {
 
       {/* Word info */}
       <div className="word-info">
-        {showLength && (
-          <span className="info-badge">📏 {gameState.wordLength} letras</span>
-        )}
+        <span className="info-badge">📏 {gameState.wordLength} letras</span>
         {showCategory && gameState.category && (
           <span className="info-badge">🏷️ {gameState.category}</span>
         )}
@@ -124,7 +116,7 @@ export function Playing() {
       </div>
 
       {/* Other players' letters */}
-      {showOtherLetters && others.length > 0 && (
+      {others.length > 0 && (
         <div className="others-letters">
           <p>Letras de los demás:</p>
           <div className="others-row">
@@ -145,7 +137,6 @@ export function Playing() {
             attempts={currentPlayer.attempts}
             wordLength={gameState.wordLength}
             currentInput={input}
-            hideCurrentRow={!showLength}
           />
         </div>
       )}
@@ -181,8 +172,8 @@ export function Playing() {
             className="attempt-input"
             type="text"
             value={input}
-            maxLength={showLength ? gameState.wordLength : 20}
-            placeholder={showLength ? `Escribe ${gameState.wordLength} letras...` : 'Escribe la palabra...'}
+            maxLength={gameState.wordLength}
+            placeholder={`Escribe ${gameState.wordLength} letras...`}
             onChange={e => setInput(e.target.value.toUpperCase())}
             onKeyDown={handleKey}
             autoFocus
@@ -193,7 +184,7 @@ export function Playing() {
           <button
             className="submit-btn"
             onClick={handleSubmit}
-            disabled={showLength ? input.trim().length !== gameState.wordLength : input.trim().length < 2}
+            disabled={input.trim().length !== gameState.wordLength}
           >
             Enviar
           </button>
@@ -206,7 +197,6 @@ export function Playing() {
             </p>
           )}
           {isSuddenDeath && <p className="attempts-left">¡Último intento!</p>}
-          {attemptError && <p className="attempt-error">{attemptError}</p>}
         </div>
       )}
 

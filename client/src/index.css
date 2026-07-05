@@ -57,6 +57,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .lobby h1 { font-size: 26px; text-align: center; margin-bottom: 4px; }
 .subtitle { text-align: center; color: var(--text2); margin-bottom: 16px; }
 .lobby h2 { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+.host-only-tag { font-size: 10px; font-weight: 500; color: var(--accent2); margin-left: 6px; opacity: 0.8; }
 
 .player-slots { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .slot {
