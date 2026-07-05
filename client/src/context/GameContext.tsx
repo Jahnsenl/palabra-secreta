@@ -58,6 +58,7 @@ interface GameContextValue {
   currentUserId: string;
   privateInfo: PrivateInfo | null;
   isConnected: boolean;
+  attemptError: string | null;
   updateSettings: (settings: Settings) => void;
   startGame: () => void;
   submitAttempt: (word: string) => void;
@@ -98,7 +99,9 @@ export function GameProvider({ roomId, currentUserId, currentUsername, currentAv
   const [gameState, setGameState] = useState<GameState>(defaultState);
   const [privateInfo, setPrivateInfo] = useState<PrivateInfo | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [attemptError, setAttemptError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const socket = (SOCKET_URL && !isInDiscord)
@@ -119,6 +122,12 @@ export function GameProvider({ roomId, currentUserId, currentUsername, currentAv
     socket.on('disconnect', () => setIsConnected(false));
     socket.on('game_state', (state: GameState) => setGameState(state));
     socket.on('private_info', (info: PrivateInfo) => setPrivateInfo(info));
+    socket.on('attempt_rejected', ({ reason }: { reason: string }) => {
+      const msg = reason === 'wrong_length' ? 'Longitud incorrecta — prueba con más o menos letras' : 'Intento inválido';
+      setAttemptError(msg);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = setTimeout(() => setAttemptError(null), 2500);
+    });
 
     return () => { socket.disconnect(); };
   }, [roomId, currentUserId, currentUsername, currentAvatar]);
@@ -131,6 +140,7 @@ export function GameProvider({ roomId, currentUserId, currentUsername, currentAv
     currentUserId,
     privateInfo,
     isConnected,
+    attemptError,
     updateSettings: (settings) => emit('update_settings', settings),
     startGame: () => emit('start_game'),
     submitAttempt: (word) => emit('submit_attempt', { word }),

@@ -338,7 +338,10 @@ io.on('connection', (socket: Socket) => {
     if (!player || player.hasGuessed) return;
 
     const secret = secretWords.get(roomId)!;
-    if (!secret || normalize(attemptWord).length !== normalize(secret).length) return;
+    if (!secret || normalize(attemptWord).length !== normalize(secret).length) {
+      socket.emit('attempt_rejected', { reason: 'wrong_length' });
+      return;
+    }
 
     if (room.phase === 'sudden_death') {
       if (player.usedSuddenDeath) return;

@@ -53,7 +53,7 @@ function SuddenDeathTimer({ startTime }: { startTime: number }) {
 }
 
 export function Playing() {
-  const { gameState, currentUserId, privateInfo, submitAttempt } = useGame();
+  const { gameState, currentUserId, privateInfo, submitAttempt, attemptError } = useGame();
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -206,6 +206,7 @@ export function Playing() {
             </p>
           )}
           {isSuddenDeath && <p className="attempts-left">¡Último intento!</p>}
+          {attemptError && <p className="attempt-error">{attemptError}</p>}
         </div>
       )}
 
