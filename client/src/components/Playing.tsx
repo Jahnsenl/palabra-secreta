@@ -9,10 +9,11 @@ function LetterBox({ char, result }: { char: string; result?: LetterResult }) {
   return <span className={cls}>{char || ''}</span>;
 }
 
-function WordGrid({ attempts, wordLength, currentInput }: {
+function WordGrid({ attempts, wordLength, currentInput, hideCurrentRow }: {
   attempts: { word: string; results: LetterResult[] }[];
   wordLength: number;
   currentInput: string;
+  hideCurrentRow?: boolean;
 }) {
   return (
     <div className="word-grid">
@@ -23,12 +24,13 @@ function WordGrid({ attempts, wordLength, currentInput }: {
           ))}
         </div>
       ))}
-      {/* current input row */}
-      <div className="grid-row current">
-        {Array.from({ length: wordLength }, (_, j) => (
-          <LetterBox key={j} char={currentInput[j] ?? ''} />
-        ))}
-      </div>
+      {!hideCurrentRow && (
+        <div className="grid-row current">
+          {Array.from({ length: wordLength }, (_, j) => (
+            <LetterBox key={j} char={currentInput[j] ?? ''} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -76,7 +78,8 @@ export function Playing() {
 
   function handleSubmit() {
     const normalized = input.trim().toUpperCase();
-    if (normalized.length !== gameState.wordLength) return;
+    if (showLength && normalized.length !== gameState.wordLength) return;
+    if (normalized.length < 2) return;
     submitAttempt(normalized);
     setInput('');
     inputRef.current?.focus();
@@ -142,6 +145,7 @@ export function Playing() {
             attempts={currentPlayer.attempts}
             wordLength={gameState.wordLength}
             currentInput={input}
+            hideCurrentRow={!showLength}
           />
         </div>
       )}
@@ -177,8 +181,8 @@ export function Playing() {
             className="attempt-input"
             type="text"
             value={input}
-            maxLength={gameState.wordLength}
-            placeholder={`Escribe ${gameState.wordLength} letras...`}
+            maxLength={showLength ? gameState.wordLength : 20}
+            placeholder={showLength ? `Escribe ${gameState.wordLength} letras...` : 'Escribe la palabra...'}
             onChange={e => setInput(e.target.value.toUpperCase())}
             onKeyDown={handleKey}
             autoFocus
@@ -189,7 +193,7 @@ export function Playing() {
           <button
             className="submit-btn"
             onClick={handleSubmit}
-            disabled={input.trim().length !== gameState.wordLength}
+            disabled={showLength ? input.trim().length !== gameState.wordLength : input.trim().length < 2}
           >
             Enviar
           </button>
