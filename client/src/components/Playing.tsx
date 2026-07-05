@@ -67,7 +67,7 @@ export function Playing() {
       : currentPlayer.attemptsLeft > 0
   );
 
-  const showLength = gameState.difficulty === 'easy' || gameState.difficulty === 'normal';
+  const showLength = gameState.difficulty !== 'extreme';
   const showCategory = gameState.difficulty === 'easy';
   const showHint = gameState.difficulty === 'easy' || gameState.difficulty === 'normal';
   const showOtherLetters = gameState.difficulty !== 'extreme';

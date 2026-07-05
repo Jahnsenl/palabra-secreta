@@ -6,7 +6,7 @@ const MAX_PLAYERS = 6;
 const DIFFICULTIES: { value: Difficulty; label: string; desc: string }[] = [
   { value: 'easy',    label: 'Fácil',   desc: 'Longitud + categoría + pista · letras únicas' },
   { value: 'normal',  label: 'Normal',  desc: 'Longitud + pista · letras únicas' },
-  { value: 'hard',    label: 'Difícil', desc: 'Sin pistas · letras pueden repetirse' },
+  { value: 'hard',    label: 'Difícil', desc: 'Longitud · sin pistas · letras pueden repetirse' },
   { value: 'extreme', label: 'Extremo', desc: 'Sin pistas · sin ver letras ajenas' },
 ];
 
