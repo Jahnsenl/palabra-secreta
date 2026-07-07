@@ -144,6 +144,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   background: var(--bg2); border: 1px solid #2d2d4a;
   border-radius: 20px; padding: 4px 10px; font-size: 12px; color: var(--text2);
 }
+.round-timer.danger { color: #f87171; border-color: #f87171; animation: blink 0.5s step-start infinite; }
 
 .my-letter-card {
   background: var(--bg2);

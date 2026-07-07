@@ -81,6 +81,7 @@ interface GameState {
   maxAttempts: number;
   cooperativeAttemptsLeft?: number;
   suddenDeathStartTime?: number;
+  roundStartTime?: number;
   roundNumber: number;
   secretWord?: string;
   revealedHint?: string;
@@ -168,6 +169,14 @@ function sendPrivateInfo(socket: Socket, player: Player) {
 }
 
 const suddenDeathTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const roundTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const ROUND_TIME_MS = 3 * 60 * 1000; // 3 minutos para adivinar la palabra
+
+function clearRoundTimer(roomId: string) {
+  const t = roundTimers.get(roomId);
+  if (t) clearTimeout(t);
+  roundTimers.delete(roomId);
+}
 
 function endGame(roomId: string) {
   const room = getRoom(roomId);
@@ -176,6 +185,7 @@ function endGame(roomId: string) {
   const t = suddenDeathTimers.get(roomId);
   if (t) clearTimeout(t);
   suddenDeathTimers.delete(roomId);
+  clearRoundTimer(roomId);
 
   const guessers = room.players
     .filter(p => p.hasGuessed && p.guessOrder !== undefined)
@@ -250,7 +260,13 @@ io.on('connection', (socket: Socket) => {
     });
     if (validWords.length === 0) return;
 
-    const wordData = validWords[Math.floor(Math.random() * validWords.length)];
+    // Evitar repetir la misma palabra que la ronda anterior en esta sala
+    const previousWord = secretWords.get(roomId);
+    const candidateWords = validWords.length > 1
+      ? validWords.filter(w => w.word !== previousWord)
+      : validWords;
+
+    const wordData = candidateWords[Math.floor(Math.random() * candidateWords.length)];
     const word = wordData.word;
     const wordLen = word.length;
     secretWords.set(roomId, word);
@@ -315,6 +331,7 @@ io.on('connection', (socket: Socket) => {
     room.startHint = (room.difficulty === 'easy' || room.difficulty === 'normal') ? wordData.hints[0] : undefined;
     room.phase = 'playing';
     room.suddenDeathStartTime = undefined;
+    room.roundStartTime = Date.now();
     room.revealedHint = undefined;
     room.firstGuesserName = undefined;
     room.cooperativeAttemptsLeft = room.isCooperative ? maxAttempts : undefined;
@@ -323,6 +340,13 @@ io.on('connection', (socket: Socket) => {
       const s = io.sockets.sockets.get(player.socketId);
       if (s) sendPrivateInfo(s, player);
     });
+
+    clearRoundTimer(roomId);
+    const timer = setTimeout(() => {
+      const r = getRoom(roomId);
+      if (r.phase === 'playing') endGame(roomId);
+    }, ROUND_TIME_MS);
+    roundTimers.set(roomId, timer);
 
     broadcast(roomId);
   });
@@ -378,6 +402,7 @@ io.on('connection', (socket: Socket) => {
 
         room.phase = 'sudden_death';
         room.suddenDeathStartTime = Date.now();
+        clearRoundTimer(roomId);
         const timer = setTimeout(() => endGame(roomId), 15000);
         suddenDeathTimers.set(roomId, timer);
       } else {
@@ -403,6 +428,7 @@ io.on('connection', (socket: Socket) => {
     const room = getRoom(roomId);
     if (room.phase !== 'ended') return;
 
+    clearRoundTimer(roomId);
     const scores = Object.fromEntries(room.players.map(p => [p.id, p.score]));
     const fresh = createRoom();
     fresh.players = room.players.map(p => ({
@@ -424,6 +450,7 @@ io.on('connection', (socket: Socket) => {
     const t = suddenDeathTimers.get(roomId);
     if (t) clearTimeout(t);
     suddenDeathTimers.delete(roomId);
+    clearRoundTimer(roomId);
     const room = getRoom(roomId);
     const fresh = createRoom();
     fresh.players = room.players.map(p => ({

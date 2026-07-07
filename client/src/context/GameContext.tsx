@@ -37,6 +37,7 @@ export interface GameState {
   maxAttempts: number;
   cooperativeAttemptsLeft?: number;
   suddenDeathStartTime?: number;
+  roundStartTime?: number;
   roundNumber: number;
   secretWord?: string;
   revealedHint?: string;

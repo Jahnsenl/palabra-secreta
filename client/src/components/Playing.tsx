@@ -49,6 +49,28 @@ function SuddenDeathTimer({ startTime }: { startTime: number }) {
   );
 }
 
+const ROUND_DURATION = 180;
+
+function RoundTimer({ startTime }: { startTime: number }) {
+  const [timeLeft, setTimeLeft] = useState(ROUND_DURATION);
+
+  useEffect(() => {
+    const calc = () => Math.max(0, ROUND_DURATION - Math.floor((Date.now() - startTime) / 1000));
+    setTimeLeft(calc());
+    const id = setInterval(() => setTimeLeft(calc()), 500);
+    return () => clearInterval(id);
+  }, [startTime]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  return (
+    <span className={`info-badge round-timer${timeLeft <= 30 ? ' danger' : ''}`}>
+      ⏱️ {minutes}:{seconds.toString().padStart(2, '0')}
+    </span>
+  );
+}
+
 export function Playing() {
   const { gameState, currentUserId, privateInfo, submitAttempt } = useGame();
   const [input, setInput] = useState('');
@@ -107,6 +129,9 @@ export function Playing() {
           <span className="info-badge">💡 {gameState.startHint}</span>
         )}
         <span className="info-badge">🔢 Ronda {gameState.roundNumber}</span>
+        {gameState.phase === 'playing' && gameState.roundStartTime && (
+          <RoundTimer startTime={gameState.roundStartTime} />
+        )}
       </div>
 
       {/* My letter */}
